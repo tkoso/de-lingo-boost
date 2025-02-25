@@ -60,6 +60,8 @@ public class Story {
 
     public Story(Long id, String content, String level, LocalDateTime createdAt) {
         this.content = content;
+        this.level = level;
+        this.createdAt = createdAt;
     }
 
 
