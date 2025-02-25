@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 
+@CrossOrigin(origins = "http://localhost:5173") // that's the vite's default port
 @RestController
 @RequestMapping("/api/stories")
 @RequiredArgsConstructor
