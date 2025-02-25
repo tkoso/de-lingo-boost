@@ -25,9 +25,9 @@ public class StoryController {
     private UserService userService;
 
     @GetMapping("/generate")
-    public ResponseEntity<Story> generateStory() {
+    public ResponseEntity<Story> generateStory(@RequestParam String level) {
 //        User user = userService.getUserByUsername(userDetails.getUsername());
-        Story generatedStory = storyService.generateStory();
+        Story generatedStory = storyService.generateStory(level);
 //        storyService.associateUserWithStory(user, generatedStory);
         return ResponseEntity.ok(generatedStory);
     }

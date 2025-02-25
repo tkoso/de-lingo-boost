@@ -18,19 +18,14 @@ public class StoryService {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private OpenRouterService huggingFaceService;
+    private OpenRouterService openRouterService;
 
-    public Story generateStory() {
-//        User user = userRepository.findById(userId)
-//                .orElseThrow(() -> new RuntimeException(("User is not found")));
-
-//        String generatedContent = generateStory();
-
-        Mono<String> mono = huggingFaceService.fetchStory("A1", "Erzaehle mal wie die Sonne funktioniert");
+    public Story generateStory(String level) {
+        // maybe some check if level is CEFR Level
+        Mono<String> mono = openRouterService.fetchStory(level, "Erzaehle mal wie die Sonne funktioniert");
         String content = mono.block();
-        Story story = new Story(0L, content, "A1", LocalDateTime.now());
+        Story story = new Story(0L, content, level, LocalDateTime.now());
         Story savedStory = storyRepository.save(story);
-//        userRepository.save(user);
 
         return savedStory;
     }
