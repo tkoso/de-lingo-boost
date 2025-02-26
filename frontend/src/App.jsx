@@ -1,19 +1,24 @@
 import { useState } from 'react';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Button, Alert, Spinner, Card } from 'react-bootstrap';
+import { Button, Alert, Spinner, Card, Form } from 'react-bootstrap';
 
 function App() {
   const [story, setStory] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [topic, setTopic] = useState('');
   const levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
   const fetchStory = async (level) => {
+    if (!topic.trim()) {
+      setError('please enter a topic!');
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`http://localhost:8080/api/stories/generate?level=${level}`);
+      const response = await axios.get(`http://localhost:8080/api/stories/generate?level=${level}&topic=${encodeURIComponent(topic)}`);
       setStory(response.data);
     } catch (err) {
       setError(err.message || 'Failed to fetch story');
@@ -25,6 +30,17 @@ function App() {
   return (
     <div className="container mt-5">
       <h1 className="mb-4">🇩🇪 de-lingo-app</h1>
+
+      <Form.Group className="mb-3">
+        <Form.Label>Topic</Form.Label>
+        <Form.Control
+          type="text"
+          value={topic}
+          onChange={(e) => setTopic(e.target.value)}
+          placeholder="Enter story topic (e.g. Space travel, German culture)"
+          disabled={loading}
+        />
+      </Form.Group>
       
       <div className="d-flex gap-2 mb-4">
         {levels.map(level => (

@@ -19,6 +19,8 @@ public class Story {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String topic;
+
     @Column(columnDefinition = "TEXT")
     private String content;
 
@@ -58,10 +60,11 @@ public class Story {
         this.id = id;
     }
 
-    public Story(Long id, String content, String level, LocalDateTime createdAt) {
+    public Story(Long id, String topic, String content, String level, LocalDateTime createdAt) {
         this.content = content;
         this.level = level;
         this.createdAt = createdAt;
+        this.topic = topic;
     }
 
 

@@ -20,14 +20,13 @@ public class StoryService {
     @Autowired
     private OpenRouterService openRouterService;
 
-    public Story generateStory(String level) {
-        // maybe some check if level is CEFR Level
-        Mono<String> mono = openRouterService.fetchStory(level, "Erzaehle mal wie die Sonne funktioniert");
+    public Story generateStory(String level, String topic) {
+        // TODO: some check if level is CEFR Level and topic isn't null or something
+        Mono<String> mono = openRouterService.fetchStory(level, topic);
         String content = mono.block();
-        Story story = new Story(0L, content, level, LocalDateTime.now());
-        Story savedStory = storyRepository.save(story);
+        Story story = new Story(0L, topic, content, level, LocalDateTime.now());
 
-        return savedStory;
+        return storyRepository.save(story);
     }
 
 }
