@@ -25,9 +25,10 @@ public class OpenRouterService {
     }
 
 
-    public Mono<String> fetchStory(String level, String topic) {
+    public Mono<Map<String, String>> fetchStory(String level, String topic) {
         String prompt = String.format(
-            "Erzaehle eine kurze Geschichte auf Deutsch (CEFR-Niveau %s). Thema: %s. Maximal 100 Woerter.",
+            "Erzaehle eine kurze Geschichte auf Deutsch (CEFR-Niveau %s). Thema: %s. Maximal 100 Woerter."
+                    + "Bitte fuege eine englische Uebersetzung nach einem '---' Zeichen hinzu.",
             level.toUpperCase(),
             topic
         );
@@ -36,9 +37,9 @@ public class OpenRouterService {
                 "messages", List.of(Map.of(  // OpenRouter uses OpenAI-compatible message format
                         "role", "user",
                         "content", prompt
-                ))
+                )),
 //                "temperature", 0.7,
-//                "max_tokens", 200
+                "max_tokens", 1600
         );
 
         return webClient.post()
@@ -50,7 +51,11 @@ public class OpenRouterService {
                     if (choices != null && !choices.isEmpty()) {
                         Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
                         if (message != null) {
-                            return (String) message.get("content");
+                            String content = (String) message.get("content");
+                            String[] parts = content.split("\\s*---\\s*");
+                            String german = parts[0].trim();
+                            String english = parts.length > 1 ? parts[1].trim() : "translation not available";
+                            return Map.of("german", german, "english", english);
                         }
                     }
                     throw new RuntimeException("Invalid response from OpenRouter API");

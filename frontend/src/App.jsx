@@ -2,6 +2,12 @@ import { useState } from 'react';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Button, Alert, Spinner, Card, Form } from 'react-bootstrap';
+import './styles.css'
+
+const splitSentences = (text) => {
+  // we will be splitting on sentence endings followed by whitespace
+  return text.split(/(?<=[.!?])\s+/);
+};
 
 function App() {
   const [story, setStory] = useState(null);
@@ -9,6 +15,7 @@ function App() {
   const [error, setError] = useState(null);
   const [topic, setTopic] = useState('');
   const levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+  const [hoveredSentence, setHoveredSentence] = useState(-1);
 
   const fetchStory = async (level) => {
     if (!topic.trim()) {
@@ -25,6 +32,25 @@ function App() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const renderTextWithHighlights = (text) => {
+    const sentences = splitSentences(text);
+    
+    return sentences.map((sentence, index) => (
+      <span
+        key={index}
+        className="sentence"
+        onMouseEnter={() => setHoveredSentence(index)}
+        onMouseLeave={() => setHoveredSentence(-1)}
+        style={{
+          backgroundColor: hoveredSentence === index ? '#f1e99f' : 'transparent',
+          transition: 'background-color 0.2s ease',
+        }}
+      >
+        {sentence}{' '}
+      </span>
+    ));
   };
 
   return (
@@ -70,17 +96,37 @@ function App() {
       )}
 
       {story && (
-        <Card>
-          <Card.Body>
-            <Card.Title>{story.level} Story</Card.Title>
-            <Card.Text>
-              {story.content}
-            </Card.Text>
-            <Card.Footer className="text-muted">
-              Generated at: {new Date(story.createdAt).toLocaleString()}
-            </Card.Footer>
-          </Card.Body>
-        </Card>
+        <div className="row">
+          <div className="col-md-6 mb-3">
+            <Card className="h-100 border-primary">
+              <Card.Header className="bg-primary text-white">German Version</Card.Header>
+              <Card.Body>
+                <Card.Title>{story.level} Story</Card.Title>
+                <Card.Text style={{ whiteSpace: 'pre-line' }}>
+                  {renderTextWithHighlights(story.content, false)}
+                </Card.Text>
+              </Card.Body>
+              <Card.Footer className="text-muted">
+                Generated at: {new Date(story.createdAt).toLocaleString()}
+              </Card.Footer>
+            </Card>
+          </div>
+
+          <div className="col-md-6 mb-3">
+            <Card className="h-100 border-success">
+              <Card.Header className="bg-success text-white">English Translation</Card.Header>
+              <Card.Body>
+                <Card.Title>{story.level} Translation</Card.Title>
+                <Card.Text style={{ whiteSpace: 'pre-line' }}>
+                  {renderTextWithHighlights(story.translation, true)}
+                </Card.Text>
+              </Card.Body>
+              <Card.Footer className="text-muted">
+                Generated at: {new Date(story.createdAt).toLocaleString()}
+              </Card.Footer>
+            </Card>
+          </div>
+        </div>
       )}
     </div>
   );
