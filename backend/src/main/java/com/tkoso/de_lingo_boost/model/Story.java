@@ -27,14 +27,19 @@ public class Story {
     private String translation;
 
     @Getter
+    @Column(columnDefinition = "TEXT")
+    private String wordTranslations;
+
+    @Getter
     private String level;
 
     @Getter
     private LocalDateTime createdAt;
 
-    public Story(Long id, String topic, String content, String translation, String level, LocalDateTime createdAt) {
+    public Story(Long id, String topic, String content, String translation, String wordTranslations, String level, LocalDateTime createdAt) {
         this.content = content;
         this.translation = translation;
+        this.wordTranslations = wordTranslations;
         this.level = level;
         this.createdAt = createdAt;
         this.topic = topic;

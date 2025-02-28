@@ -1,10 +1,13 @@
 package com.tkoso.de_lingo_boost.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,7 +31,9 @@ public class OpenRouterService {
     public Mono<Map<String, String>> fetchStory(String level, String topic) {
         String prompt = String.format(
             "Erzaehle eine kurze Geschichte auf Deutsch (CEFR-Niveau %s). Thema: %s. Maximal 100 Woerter."
-                    + "Bitte fuege eine englische Uebersetzung nach einem '---' Zeichen hinzu.",
+                + "Bitte fuege eine englische Uebersetzung nach einem '---' Zeichen hinzu."
+                + "Am Ende, fuege eine JSON-Liste von Schluesselwoertern mit Uebersetzungen hinzu, getrennt durch ein zweites '---'."
+                + "Beispiel: {\"words\": [{\"de\": \"Hund\", \"en\": \"dog\"}, ...]}",
             level.toUpperCase(),
             topic
         );
@@ -55,7 +60,22 @@ public class OpenRouterService {
                             String[] parts = content.split("\\s*---\\s*");
                             String german = parts[0].trim();
                             String english = parts.length > 1 ? parts[1].trim() : "translation not available";
-                            return Map.of("german", german, "english", english);
+
+                            String wordMapJson = "{}";
+                            if (parts.length > 2) {
+                                ObjectMapper mapper = new ObjectMapper();
+                                try {
+                                    Map<String, Object> wordMap = mapper.readValue(parts[2], Map.class);
+                                    wordMapJson = mapper.writeValueAsString(wordMap);
+                                } catch (JsonProcessingException e) {
+                                    wordMapJson = "{\"error\": \"invalid json format for keywords\"}";
+                                }
+                            }
+                            return Map.of(
+                                "german", german,
+                                "english", english,
+                                "wordMap", wordMapJson
+                            );
                         }
                     }
                     throw new RuntimeException("Invalid response from OpenRouter API");
