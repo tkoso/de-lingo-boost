@@ -33,7 +33,10 @@ public class OpenRouterService {
             "Erzaehle eine kurze Geschichte auf Deutsch (CEFR-Niveau %s). Thema: %s. Maximal 100 Woerter."
                 + "Bitte fuege eine englische Uebersetzung nach einem '---' Zeichen hinzu."
                 + "Am Ende, fuege eine JSON-Liste von Schluesselwoertern mit Uebersetzungen hinzu, getrennt durch ein zweites '---'."
-                + "Beispiel: {\"words\": [{\"de\": \"Hund\", \"en\": \"dog\"}, ...]}",
+                + "Beispiel: {\"words\": [{\"de\": \"Hund\", \"en\": \"dog\"}, ...]}"
+                + "Zum Schluss, fuege 3 Multiple-Choice-Fragen im JSON-Format hinzu, getrennt durch ein drittes '---'."
+                + "Jede Frage soll 3 Optionen (A, B, C) haben und eine korrekte Antwort. Beispiel: "
+                + "{\"questions\":[{\"question\":\"...\",\"options\":{\"A\":\"...\",\"B\":\"...\",\"C\":\"...\"},\"correctAnswer\":\"A\"}]}",
             level.toUpperCase(),
             topic
         );
@@ -44,7 +47,7 @@ public class OpenRouterService {
                         "content", prompt
                 )),
 //                "temperature", 0.7,
-                "max_tokens", 1600
+                "max_tokens", 3200
         );
 
         return webClient.post()
@@ -71,10 +74,19 @@ public class OpenRouterService {
                                     wordMapJson = "{\"error\": \"invalid json format for keywords\"}";
                                 }
                             }
+                            String questionsJson = "[]";
+                            if (parts.length > 3) {
+                                try {
+                                    questionsJson = parts[3].trim();
+                                } catch (Exception e) {
+                                    questionsJson = "{\"error\": \"invalid questions format\"}";
+                                }
+                            }
                             return Map.of(
                                 "german", german,
                                 "english", english,
-                                "wordMap", wordMapJson
+                                "wordMap", wordMapJson,
+                                "questions", questionsJson
                             );
                         }
                     }

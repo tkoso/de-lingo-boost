@@ -26,7 +26,7 @@ public class StoryService {
         Mono<Map<String, String>> mono = openRouterService.fetchStory(level, topic);
         Map<String, String> content = mono.block();
         assert content != null;
-        Story story = new Story(0L, topic, content.get("german"), content.get("english"), content.get("wordMap"), level, LocalDateTime.now());
+        Story story = new Story(0L, topic, content.get("german"), content.get("english"), content.get("wordMap"), content.get("questions"), level, LocalDateTime.now());
 
         return storyRepository.save(story);
     }
