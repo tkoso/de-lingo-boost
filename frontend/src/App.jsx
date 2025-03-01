@@ -6,6 +6,7 @@ import './styles.css'
 import GermanStory from './components/GermanStory';
 import EnglishStory from './components/EnglishStory';
 import TranslationTooltip from './components/TranslationTooltip';
+import Quiz from './components/Quiz';
 
 
 
@@ -23,6 +24,8 @@ function App() {
     const saved = localStorage.getItem('translations');
     return saved ? new Map(JSON.parse(saved)) : new Map();
   });
+  const [selectedAnswers, setSelectedAnswers] = useState({});
+  const [showResults, setShowResults] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -69,6 +72,15 @@ function App() {
       setLoading(false);
     }
   };
+
+  const handleAnswerSelect = (questionIndex, answer) => {
+    setSelectedAnswers(prev => ({
+      ...prev,
+      [questionIndex]: answer
+    }));
+  };
+
+  const toggleResults = () => setShowResults(!showResults);
 
   return (
     <div className="container mt-5">
@@ -163,6 +175,16 @@ function App() {
           translation={clickedWord.translation}
           tooltipPosition={tooltipPosition}
           onClose={() => setClickedWord(null)}
+        />
+      )}
+
+      {story?.questions && (
+        <Quiz
+          questions={JSON.parse(story.questions).questions}
+          selectedAnswers={selectedAnswers}
+          onAnswerSelect={handleAnswerSelect}
+          showResults={showResults}
+          onShowResults={toggleResults}
         />
       )}
     </div>

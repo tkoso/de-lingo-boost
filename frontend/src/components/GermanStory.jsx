@@ -19,8 +19,11 @@ const GermanStory = ({ text, wordTranslations, cachedTranslations, onWordClick, 
         transition: 'background-color 0.2s ease',
       }}
     >
-      {sentence.split(' ').map((word, wordIndex) => {
-        const cleanWord = word.replace(/[^a-zA-ZäöüÄÖÜß]/g, '').toLowerCase();
+      {sentence.split(/(\s+)/).map((wordOrSpace, wordIndex) => {
+        if (/\s+/.test(wordOrSpace)) {
+          return <span key={wordIndex}>{wordOrSpace}</span>;
+        }
+        const cleanWord = wordOrSpace.replace(/[^a-zA-ZäöüÄÖÜß]/g, '').toLowerCase();
         const translation = currentTranslations.get(cleanWord.toLowerCase())
           || cachedTranslations.get(cleanWord.toLowerCase()) || '';
         return (
@@ -33,7 +36,7 @@ const GermanStory = ({ text, wordTranslations, cachedTranslations, onWordClick, 
                 textDecoration: translation ? 'underline dotted' : 'none',
             }}
           >
-            {word}{' '} {/* add space because of split losing it */}
+            {wordOrSpace}{' '}
           </span>
         );
       })}
