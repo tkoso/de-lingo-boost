@@ -3,11 +3,12 @@ import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Button, Alert, Spinner, Card, Form } from 'react-bootstrap';
 import './styles.css'
+import GermanStory from './components/GermanStory';
+import EnglishStory from './components/EnglishStory';
+import TranslationTooltip from './components/TranslationTooltip';
 
-const splitSentences = (text) => {
-  // we will be splitting on sentence endings followed by whitespace
-  return text.split(/(?<=[.!?])\s+/);
-};
+
+
 
 function App() {
   const [story, setStory] = useState(null);
@@ -16,7 +17,7 @@ function App() {
   const [topic, setTopic] = useState('');
   const levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
   const [hoveredSentence, setHoveredSentence] = useState(-1);
-  const [clickedWord, setClickedWord] = useState('');
+  const [clickedWord, setClickedWord] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [cachedTranslations, setCachedTranslations] = useState(() => {
     const saved = localStorage.getItem('translations');
@@ -33,73 +34,13 @@ function App() {
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
-  const renderGermanText = (text, wordTranslations) => {
-    const sentences = splitSentences(text);
-    const currentTranslations = new Map(
-      JSON.parse(wordTranslations)?.words?.map(w => [w.de.toLowerCase(), w.en]) || []
-    );
-
-    return sentences.map((sentence, sentenceIndex) => (
-      <span
-        key={sentenceIndex}
-        className="sentence"
-        onMouseEnter={() => setHoveredSentence(sentenceIndex)}
-        onMouseLeave={() => setHoveredSentence(-1)}
-        style={{
-          backgroundColor: hoveredSentence === sentenceIndex ? '#f1e99f' : 'transparent',
-          transition: 'background-color 0.2s ease',
-        }}
-      >
-        {sentence.split(/( )/g).map((word, wordIndex) => {
-          if (word === ' ') return ' ';
-          const cleanWord = word.replace(/^[^\wäöüÄÖÜß]+|[^\wäöüÄÖÜß]+$/gi, '');
-          const translation = currentTranslations.get(cleanWord.toLowerCase()) || cachedTranslations.get(cleanWord.toLowerCase());
-
-          return (
-            <>
-            <span
-              key={wordIndex}
-              className="clickable-word"
-              onClick={(e) => {
-                const rect = e.target.getBoundingClientRect();
-                setTooltipPosition({
-                  x: rect.left + window.scrollX,
-                  y: rect.top + window.scrollY + rect.height,
-                });
-                setClickedWord({ word: cleanWord, translation });
-              }}
-              style={{
-                cursor: translation ? 'pointer' : 'default',
-                textDecoration: translation ? 'underline dotted' : 'none',
-              }}
-            >
-              {word}
-            </span> 
-            {' '} {/* add space because of split losing it */}  
-            </>
-          );
-          
-        })}
-      </span>
-    ));
-  }
-
-  const renderEnglishText = (text) => {
-    const sentences = splitSentences(text);
-    return sentences.map((sentence, index) => (
-      <span
-        key={index}
-        className="sentence"
-        onMouseEnter={() => setHoveredSentence(index)}
-        onMouseLeave={() => setHoveredSentence(-1)}
-        style={{
-          backgroundColor: hoveredSentence === index ? '#f1e99f' : 'transparent',
-          transition: 'background-color 0.2s ease',
-        }}
-      >
-        {sentence}{' '}
-      </span>
-    ));
+  const handleWordClick = (e, cleanWord, translation) => {
+    const rect = e.target.getBoundingClientRect();
+    setTooltipPosition({
+      x: rect.left + window.scrollX,
+      y: rect.top + window.scrollY + rect.height,
+    });
+    setClickedWord({ word: cleanWord, translation });
   }
 
   const fetchStory = async (level) => {
@@ -179,7 +120,14 @@ function App() {
               <Card.Body>
                 <Card.Title>{story.level} Story</Card.Title>
                 <Card.Text style={{ whiteSpace: 'pre-line' }}>
-                  {renderGermanText(story.content, story.wordTranslations)}
+                  <GermanStory
+                    text={story.content}
+                    wordTranslations={story.wordTranslations}
+                    cachedTranslations={cachedTranslations}
+                    onWordClick={handleWordClick}
+                    hoveredSentence={hoveredSentence}
+                    setHoveredSentence={setHoveredSentence}
+                  />
                 </Card.Text>
               </Card.Body>
               <Card.Footer className="text-muted">
@@ -194,7 +142,11 @@ function App() {
               <Card.Body>
                 <Card.Title>{story.level} Translation</Card.Title>
                 <Card.Text style={{ whiteSpace: 'pre-line' }}>
-                  {renderEnglishText(story.translation)}
+                  <EnglishStory
+                    text={story.translation}
+                    hoveredSentence={hoveredSentence}
+                    setHoveredSentence={setHoveredSentence}
+                  />
                 </Card.Text>
               </Card.Body>
               <Card.Footer className="text-muted">
@@ -206,27 +158,12 @@ function App() {
       )}
 
       {clickedWord && clickedWord.translation && (
-        <div
-          style={{
-            position: 'absolute',
-            left: `${tooltipPosition.x}px`,
-            top: `${tooltipPosition.y}px`,
-            backgroundColor: 'white',
-            border: '1px solid #ddd',
-            padding: '8px',
-            borderRadius: '4px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-            zIndex: 1000,
-          }}
-        >
-          <b>{clickedWord.word}</b>: {clickedWord.translation}
-          <button 
-            onClick={() => setClickedWord(null)}
-            style={{ marginLeft: '8px', fontSize: '0.8em' }}
-          >
-            ×
-          </button>
-        </div>
+        <TranslationTooltip
+          word={clickedWord.word}
+          translation={clickedWord.translation}
+          tooltipPosition={tooltipPosition}
+          onClose={() => setClickedWord(null)}
+        />
       )}
     </div>
   );
