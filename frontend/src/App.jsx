@@ -76,10 +76,15 @@ function App() {
   };
 
   const handleAnswerSelect = (questionIndex, answer) => {
-    setSelectedAnswers(prev => ({
-      ...prev,
-      [questionIndex]: answer
-    }));
+    setSelectedAnswers(prev => {
+      const newAnswers = { ...prev };
+      if (prev[questionIndex] === answer) {
+        delete newAnswers[questionIndex];
+      } else {
+        newAnswers[questionIndex] = answer;
+      }
+      return newAnswers;
+    })
   };
 
   const toggleResults = () => setShowResults(!showResults);
