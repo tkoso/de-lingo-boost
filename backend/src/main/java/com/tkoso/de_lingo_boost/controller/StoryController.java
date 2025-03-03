@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "http://localhost:5173") // that's the vite's default port
 @RestController
@@ -71,5 +73,18 @@ public class StoryController {
         userStoryRepository.save(userStory);
 
         return ResponseEntity.ok("Story saved for user!");
+    }
+
+    @GetMapping("/saved")
+    public ResponseEntity<List<Story>> getSavedStories() {
+        String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user was not found"));
+
+        List<UserStory> userStories = userStoryRepository.findByUser(user);
+        List<Story> stories = userStories.stream()
+                .map(UserStory::getStory)
+                .toList();
+        return ResponseEntity.ok(stories);
     }
 }

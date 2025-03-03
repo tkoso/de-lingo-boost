@@ -128,6 +128,7 @@ function Home() {
         { username ? (
           <div>
             <span className="me-2">Welcome, {username}!</span>
+            <Link to="/saved" className="btn btn-primary me-2">Saved Stories</Link>
             <Button variant="danger" onClick={handleLogout}>Logout</Button>
           </div>
         ) : (
