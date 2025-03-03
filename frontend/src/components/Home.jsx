@@ -104,6 +104,23 @@ function Home() {
     setUsername(null);
   }
 
+  const saveStory = async () => {
+    try {
+      const response = await axios.post(
+        `http://localhost:8080/api/stories/save_story?storyId=${story.id}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+      console.log(response.data); // saved message
+    } catch (error) {
+      console.error('error saving story:', error.response?.data || error.message);
+    }
+  }
+
   return (
     <div className="container mt-5">
       <div className="d-flex justify-content-between align-items-center mb-4">
@@ -129,21 +146,28 @@ function Home() {
         />
       </Form.Group>
       
-      <div className="d-flex gap-2 mb-4">
-        {levels.map(level => (
-          <Button
-            key={level}
-            style={{
-              backgroundColor: level.startsWith('A') ? '#ff69b4' : level.startsWith('B') ? '#9900cc' : '#33cccc',
-              borderColor: 'transparent',
-            }}
-            variant="primary"
-            onClick={() => fetchStory(level)}
-            disabled={loading}
-          >
-            {level}
-          </Button>
-        ))}
+      <div className="mt-2 mb-3 d-flex justify-content-between">
+        <div className="d-flex gap-2">
+          {levels.map(level => (
+            <Button
+              key={level}
+              style={{
+                backgroundColor: level.startsWith('A') ? '#ff69b4' : level.startsWith('B') ? '#9900cc' : '#33cccc',
+                borderColor: 'transparent',
+              }}
+              variant="primary"
+              onClick={() => fetchStory(level)}
+              disabled={loading}
+            >
+              {level}
+            </Button>
+          ))}
+        </div>
+        {story && (
+          <div className="align-self-center">
+            <Button variant="success" onClick={saveStory}>Save Story</Button>
+          </div>
+        )}
       </div>
 
       {loading && (
@@ -159,6 +183,8 @@ function Home() {
           Error: {error}
         </Alert>
       )}
+
+
 
       {story && (
         <div className="row">
