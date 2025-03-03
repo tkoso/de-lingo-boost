@@ -7,6 +7,7 @@ import GermanStory from './GermanStory';
 import EnglishStory from './EnglishStory';
 import TranslationTooltip from './TranslationTooltip';
 import Quiz from './Quiz';
+import { Link } from 'react-router-dom';
 
 
 
@@ -26,6 +27,7 @@ function Home() {
   });
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [showResults, setShowResults] = useState(false);
+  const [username, setUsername] = useState(localStorage.getItem('username') || null);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -54,7 +56,14 @@ function Home() {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`http://localhost:8080/api/stories/generate?level=${level}&topic=${encodeURIComponent(topic)}`);
+      const response = await axios.get(`http://localhost:8080/api/stories/generate?level=${level}&topic=${encodeURIComponent(topic)}`
+        ,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`  
+          }
+        }
+      );
       setShowResults(false);
       setSelectedAnswers({});
       setStory(response.data);
@@ -89,9 +98,25 @@ function Home() {
 
   const toggleResults = () => setShowResults(!showResults);
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    setUsername(null);
+  }
+
   return (
     <div className="container mt-5">
-      <h1 className="mb-4">🇩🇪 de-lingo-app</h1>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h1 className="mb-4">🇩🇪 de-lingo-app</h1>
+        { username ? (
+          <div>
+            <span className="me-2">Welcome, {username}!</span>
+            <Button variant="danger" onClick={handleLogout}>Logout</Button>
+          </div>
+        ) : (
+        <Link to="/login" className="btn btn-success px-4 fw-bold">Login</Link>
+        )}
+      </div>
 
       <Form.Group className="mb-3">
         <Form.Label>Topic</Form.Label>
