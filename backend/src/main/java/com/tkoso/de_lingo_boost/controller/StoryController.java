@@ -23,7 +23,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@CrossOrigin(origins = "http://localhost:5173") // that's the vite's default port
 @RestController
 @RequestMapping("/api/stories")
 @RequiredArgsConstructor
